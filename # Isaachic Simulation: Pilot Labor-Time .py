@@ -35,6 +35,8 @@ class ResourceBank:
     def get_enlt_multiplier(self, resource_name):
         res = self.registry.get(resource_name)
         return res["capacity"] / max(res["current"], 1) if res else 1.0
+        return res["capacity"] / max(res["current"], 0.01) # Prevents DivisionByZero
+
 
     def deplete(self, resource_name, amount):
         if resource_name in self.registry:
