@@ -2,6 +2,8 @@
 # Base logic by Isaac MX Nielens (March 2026)
 # Features: Labor-Time Vouchers, Dynamic ENLT, Metabolic Ticks, and Adaptive Redirects
 
+import random
+
 class ResourceBank:
     def __init__(self):
         # Earth's Registry: capacity vs current available stock
@@ -57,7 +59,12 @@ class CentralPlan:
             "Plastic": {"planned_labor": 140, "spent_vouchers": 0, "base_enlt": 50},
             "Healthcare": {"planned_labor": 250, "spent_vouchers": 0, "base_enlt": 90},
         }
-
+    def innovate(self):
+        """Simulates technological progress reducing ecological impact."""
+        target = random.choice(list(self.products.keys()))
+        reduction = 0.15 # 15% efficiency gain
+        self.products[target]["base_enlt"] *= (1 - reduction)
+        print(f"\n[TECH BREAKTHROUGH] New production methods for {target} found! Ecological cost reduced by 15%.")
     def process_consumption(self, product_name, amount):
         if product_name in self.products:
             self.products[product_name]["spent_vouchers"] += amount
@@ -144,7 +151,10 @@ plan.process_consumption("Healthcare", 300)
 print("\n--- YEAR 1 STATUS ---")
 plan.calculate_suv()
 
+
+
 earth.tick() # The Earth regenerates
+plan.innovate() # A tech breakthrough reduces ENLT for a random product
 
 print("\n--- YEAR 2 STATUS ---")
 plan.calculate_suv()
