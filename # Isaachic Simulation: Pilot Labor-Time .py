@@ -1,70 +1,114 @@
-# Isaachic Simulation: Pilot Labor-Time Voucher System
-# Base logic developed by Isaac MX Nielens on Wednesday, March, 2026
-# This simulation models a simplified version of the Isaachic economic system, focusing on labor-time vouchers and their impact on production and consumption decisions.
+# Isaachic Simulation: Integrated Labor-Time & Dynamic Metabolism
+# Base logic by Isaac MX Nielens (March 2026)
+# Integrated with Resource Scarcity & Metabolic Veto logic
+
+class ResourceBank:
+    def __init__(self):
+        # Earth's Registry: capacity vs current available stock
+        # Lower 'current' values trigger higher ENLT multipliers (scarcity)
+        self.registry = {
+            "Bread": {"capacity": 1000, "current": 900},
+            "Medicine": {"capacity": 500, "current": 450},
+            "Water": {"capacity": 5000, "current": 4800},
+            "Steel": {"capacity": 1000, "current": 150},  # CRITICALLY LOW
+            "Wood": {"capacity": 1200, "current": 600},
+            "Electricity": {"capacity": 2000, "current": 1800},
+            "Plastic": {"capacity": 1500, "current": 400}, # SCARCE
+            "Healthcare": {"capacity": 1000, "current": 1000} # Infinite social resource
+        }
+
+    def get_enlt_multiplier(self, resource_name):
+        """Calculates the Scarcity Multiplier based on available stock."""
+        if resource_name in self.registry:
+            res = self.registry[resource_name]
+            # Multiplier = Capacity / Current. 
+            # If we have 10% left, the ecological cost (ENLT) is 10x higher.
+            return res["capacity"] / max(res["current"], 1)
+        return 1.0
+
+    def deplete(self, resource_name, amount):
+        """Physical depletion of the resource stock."""
+        if resource_name in self.registry:
+            self.registry[resource_name]["current"] -= (amount * 0.1) # 1 voucher = 0.1 physical units
+            if self.registry[resource_name]["current"] < 0:
+                self.registry[resource_name]["current"] = 0
 
 class CentralPlan:
-    def __init__(self):
+    def __init__(self, resource_bank):
+        self.bank = resource_bank
+        # Base ENLT represents the "Initial Ecological Cost"
         self.products = {
-            "Bread": {"planned_labor": 100, "spent_vouchers": 0, "enlt": 5}, #Changed ENLT to 500 for Bread to reflect lower ecological cost in which it VETOED THE DECISION IVE DONE IT 
-            "Medicine": {"planned_labor": 50, "spent_vouchers": 0, "enlt": 20},
-            "Water": {"planned_labor": 150, "spent_vouchers": 0, "enlt": 80},
-            "Clothing": {"planned_labor": 80, "spent_vouchers": 0, "enlt": 30},
-            "Wood": {"planned_labor": 120, "spent_vouchers": 0, "enlt": 60},
-            "Steel": {"planned_labor": 200, "spent_vouchers": 0, "enlt": 100},
-            "Natural Gas": {"planned_labor": 180, "spent_vouchers": 0, "enlt": 90},
-            "Electricity": {"planned_labor": 160, "spent_vouchers": 0, "enlt": 70},
-            "Plastic": {"planned_labor": 140, "spent_vouchers": 0, "enlt": 50},
-            "Paper": {"planned_labor": 110, "spent_vouchers": 0, "enlt": 40},
-            "chairs": {"planned_labor": 90, "spent_vouchers": 0, "enlt": 25},
-            "tables": {"planned_labor": 130, "spent_vouchers": 0, "enlt": 35},
-            "cars": {"planned_labor": 300, "spent_vouchers": 0, "enlt": 150},
-            "smartphones": {"planned_labor": 250, "spent_vouchers": 0, "enlt": 120},
-            "laptops": {"planned_labor": 220, "spent_vouchers": 0, "enlt": 110},
-            "furniture": {"planned_labor": 180, "spent_vouchers": 0, "enlt": 80},
-            "Education": {"planned_labor": 200, "spent_vouchers": 0, "enlt": 60},
-            "Healthcare": {"planned_labor": 250, "spent_vouchers": 0, "enlt": 90},
-            "Entertainment": {"planned_labor": 150, "spent_vouchers": 0, "enlt": 40},
-            "Transportation": {"planned_labor": 220, "spent_vouchers": 0, "enlt": 100},
-            "Agriculture": {"planned_labor": 170, "spent_vouchers": 0, "enlt": 70},
-            "Construction": {"planned_labor": 200, "spent_vouchers": 0, "enlt": 80},
-            "Textiles": {"planned_labor": 140, "spent_vouchers": 0, "enlt": 50},
-            "Metals": {"planned_labor": 160, "spent_vouchers": 0, "enlt": 60},
-            "Chemicals": {"planned_labor": 180, "spent_vouchers": 0, "enlt": 90},
-            "Pharmaceuticals": {"planned_labor": 220, "spent_vouchers": 0, "enlt": 110},
-            }
+            "Bread": {"planned_labor": 100, "spent_vouchers": 0, "base_enlt": 5},
+            "Medicine": {"planned_labor": 50, "spent_vouchers": 0, "base_enlt": 20},
+            "Water": {"planned_labor": 150, "spent_vouchers": 0, "base_enlt": 80},
+            "Wood": {"planned_labor": 120, "spent_vouchers": 0, "base_enlt": 60},
+            "Steel": {"planned_labor": 200, "spent_vouchers": 0, "base_enlt": 100},
+            "Electricity": {"planned_labor": 160, "spent_vouchers": 0, "base_enlt": 70},
+            "Plastic": {"planned_labor": 140, "spent_vouchers": 0, "base_enlt": 50},
+            "Healthcare": {"planned_labor": 250, "spent_vouchers": 0, "base_enlt": 90},
+        }
 
     def process_consumption(self, product_name, amount):
         if product_name in self.products:
             self.products[product_name]["spent_vouchers"] += amount
-            print(f"Consumed {product_name}. Vouchers spent: {amount}")
+            self.bank.deplete(product_name, amount)
+            print(f"Consumed {product_name:10} | Vouchers spent: {amount}")
 
     def calculate_suv(self):
-        print("\n--- SUV Feedback (The PID Signal) ---")
+        print("\n" + "="*80)
+        print("--- ISAAC-CYBERNETIC FEEDBACK (THE PID SIGNAL) ---")
+        print(f"{'Product':12} | {'SUV':4} | {'Dyn-ENLT':8} | {'PS':4} | {'Metabolic Action'}")
+        print("-" * 80)
+        
         for name, data in self.products.items():
-            # SUV = Vouchers spent / Planned labor
+            # SUV = Social Weighting proxy (Demand vs Plan)
             suv = data["spent_vouchers"] / data["planned_labor"]
             
-            # The Isaachic Adjudication: PS = (SNLT * SW) / sum(ENLT)
-            # We use SUV as our Social Weighting (SW) proxy here
-            priority_score = (data["planned_labor"] * suv) / data["enlt"]
+            # Dynamic ENLT = Base Cost * Scarcity Multiplier
+            multiplier = self.bank.get_enlt_multiplier(name)
+            current_enlt = data["base_enlt"] * multiplier
+            
+            # Priority Score (The Core Isaachic Logic)
+            priority_score = (data["planned_labor"] * suv) / current_enlt
             
             if priority_score < 1.0:
-                action = "VETOED / THROTTLED (Ecological Cost too high)"
+                action = f"VETOED (Scarcity: {multiplier:.1f}x)"
             elif suv > 1.0:
-                action = "INCREASE production (High Social Urgency)"
+                action = "INCREASE PRODUCTION"
             elif suv < 1.0:
-                action = "DECREASE production (Avoid Waste)"
+                action = "DECREASE PRODUCTION"
             else:
-                action = "STASIS (Metabolic Equilibrium)"
+                action = "STASIS (Equilibrium)"
             
-            print(f"{name} | SUV: {suv:.2f} | PS: {priority_score:.2f} | Action: {action}")
+            print(f"{name:12} | {suv:.2f} | {current_enlt:8.1f} | {priority_score:.2f} | {action}")
 
-            if data["enlt"] > 50:
-                print(f"  * Warning: ENLT for {name} is high ({data['enlt']}), consider adjusting labor allocation.")
+class IsaachicAgent:
+    def __init__(self, name, training_hours, career_expected_hours):
+        self.name = name
+        self.v_hour = 1 + (training_hours / career_expected_hours)
+        self.vouchers = 0
 
-# Connect the "Brain" to the "Body"
-plan = CentralPlan()
+    def work(self, actual_hours):
+        credit = actual_hours * self.v_hour
+        self.vouchers += credit
+        return credit
 
+# --- EXECUTION ---
+earth = ResourceBank()
+plan = CentralPlan(earth)
+
+# Initialize Agents
+surgeon = IsaachicAgent("Specialist", training_hours=20000, career_expected_hours=40000)
+laborer = IsaachicAgent("Baseline", training_hours=0, career_expected_hours=40000)
+
+print(f"--- SIL Multipliers ---")
+print(f"Surgeon: {surgeon.v_hour:.2f}x | Laborer: {laborer.v_hour:.2f}x\n")
+
+# Simulation Cycle: Work and then Consume
+surgeon.work(40) 
+laborer.work(40)
+
+# Simulating high demand across various sectors
 # Simulation: People spend their earned vouchers
 plan.process_consumption("Bread", 120)  # High demand
 plan.process_consumption("Medicine", 25) # Low demand (over-produced)
@@ -94,36 +138,6 @@ plan.process_consumption("furniture", 90) # Moderate demand for home goods
 
 plan.calculate_suv()
 
-
-class IsaachicAgent:
-    def __init__(self, name, training_hours, career_expected_hours):
-        self.name = name
-        self.training_hours = training_hours
-        self.career_expected_hours = career_expected_hours
-        
-        # Formula: V_hour = 1 + (L_training / n_life)
-        self.v_hour = 1 + (training_hours / career_expected_hours)
-        self.vouchers = 0
-
-    def work(self, actual_hours):
-        # Value produced is based on Labor Density (SIL)
-        credit = actual_hours * self.v_hour
-        self.vouchers += credit
-        print(f"{self.name} worked {actual_hours} hours. Vouchers earned: {credit:.2f}")
-
-# Initializing agents based on social investment
-surgeon = IsaachicAgent("Specialist", training_hours=20000, career_expected_hours=40000)
-laborer = IsaachicAgent("Baseline", training_hours=0, career_expected_hours=40000)
-
-print(f"--- SIL Multipliers ---")
-print(f"{surgeon.name}: {surgeon.v_hour}")
-print(f"{laborer.name}: {laborer.v_hour}")
-
-print(f"\n--- Simulation Cycle ---")
-surgeon.work(8)
-laborer.work(8)
 print(f"\n--- Total Vouchers ---")
-print(f"{surgeon.name}: {surgeon.vouchers:.2f} vouchers")
-print(f"{laborer.name}: {laborer.vouchers:.2f} vouchers")
-
-#IM A FUCKING GENIUS!!!!!
+print(f"Surgeon earned: {surgeon.vouchers:.2f} vouchers")
+print(f"Laborer earned: {laborer.vouchers:.2f} vouchers")
