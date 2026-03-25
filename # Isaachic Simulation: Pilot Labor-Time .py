@@ -132,29 +132,39 @@ class IsaachicAgent:
         self.vouchers += credit
         return credit
 
-# --- EXECUTION ---
+# --- EXECUTION: THE 10-YEAR CIVILIZATION LOOP ---
 earth = ResourceBank()
 plan = CentralPlan(earth)
 
+# Initialize Agents
 surgeon = IsaachicAgent("Specialist", training_hours=20000, career_expected_hours=40000)
 laborer = IsaachicAgent("Baseline", training_hours=0, career_expected_hours=40000)
 
-# Work Cycle
-surgeon.work(40) 
-laborer.work(40)
+# Run for 10 Years
+for year in range(1, 11):
+    print(f"\n" + "#"*40)
+    print(f"       STARTING YEAR {year}")
+    print("#"*40)
+    
+    # 1. THE LABOR PHASE: People work and earn vouchers
+    surgeon.work(40) 
+    laborer.work(40)
 
-# Consumption (Simulating high demand for scarce Steel)
-plan.process_consumption("Bread", 120)
-plan.process_consumption("Steel", 250) 
-plan.process_consumption("Healthcare", 300)
+    # 2. THE CONSUMPTION PHASE: People spend their earned vouchers
+    # (We simulate demand increasing as the population grows/settles)
+    base_demand = 100 + (year * 5) 
+    plan.process_consumption("Bread", base_demand * 1.2)
+    plan.process_consumption("Steel", base_demand * 0.5) 
+    plan.process_consumption("Healthcare", base_demand * 1.5)
+    plan.process_consumption("Wood", base_demand * 0.8)
 
-print("\n--- YEAR 1 STATUS ---")
-plan.calculate_suv()
+    # 3. THE ADJUDICATION PHASE: The system calculates the SUV and PS
+    plan.calculate_suv()
 
+    # 4. THE METABOLIC PHASE: The Earth regenerates and Tech evolves
+    earth.tick()
+    plan.innovate()
 
-
-earth.tick() # The Earth regenerates
-plan.innovate() # A tech breakthrough reduces ENLT for a random product
-
-print("\n--- YEAR 2 STATUS ---")
-plan.calculate_suv()
+print("\n" + "!"*40)
+print("   10-YEAR SIMULATION COMPLETE")
+print("!"*40)
