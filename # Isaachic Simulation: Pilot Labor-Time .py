@@ -15,7 +15,6 @@ class ResourceBank:
             "Plastic": {"capacity": 1500, "current": 400, "regrow_rate": 0.0}, 
             "Healthcare": {"capacity": 1000, "current": 1000, "regrow_rate": 0.0}
         }
-
     def tick(self):
         """The 'Earth' heals during this phase."""
         print("\n>>> METABOLIC TICK: The Earth is regenerating... <<<")
@@ -65,7 +64,7 @@ class CentralPlan:
 
     def calculate_suv(self):
         print("\n" + "="*80)
-        print("--- ISAAC-CYBERNETIC FEEDBACK (THE PID SIGNAL) ---")
+        print("--- ISAACHIC-CYBERNETIC FEEDBACK (THE PID SIGNAL) ---")
         print(f"{'Product':12} | {'SUV':4} | {'Dyn-ENLT':8} | {'PS':4} | {'Metabolic Action'}")
         print("-" * 80)
         
@@ -154,4 +153,3 @@ print(f"Laborer earned: {laborer.vouchers:.2f} vouchers")
 earth.tick()  # This runs the regeneration
 print("\n--- YEAR 2: POST-REGENERATION STATUS ---")
 plan.calculate_suv() # This shows the new, lower ENLT costs
-
