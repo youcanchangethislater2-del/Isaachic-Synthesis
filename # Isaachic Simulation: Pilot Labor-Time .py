@@ -45,7 +45,12 @@ class ResourceBank:
         res = self.registry.get(resource_name)
         if res:
             raw_multiplier = res["capacity"] / max(res["current"], 0.01)
-            damping = 0.1 if resource_name == "Electronics" else 0.3
+            
+            # Check for Democratic Subsidy (Temporary Damping Override)
+            damping = res.get("temp_damping", 0.3)
+            # Reset for next year so it's not a permanent cheat
+            if "temp_damping" in res: del res["temp_damping"] 
+            
             return 1 + (raw_multiplier - 1) * damping
         return 1.0
 
@@ -96,6 +101,26 @@ class CentralPlan:
         self.products[target]["base_enlt"] *= 0.85
         print(f"[TECH] Research focused on {target}. Cost reduced by 15%.")
 
+    def democratic_vote(self, target_product, motion_type):
+        """Allows agents to collectively override the algorithm."""
+        print(f"\n[VOTE] The Cyber-Demos has convened for: {target_product}")
+        
+        if motion_type == "SUBSIDIZE":
+            # Workers vote to ignore the Eco-Penalty (Damping) for 1 year
+            # This represents a "Social Emergency" priority
+            self.bank.registry[target_product]["temp_damping"] = 0.05
+            print(f"  * Motion PASSED: {target_product} Eco-Penalty reduced to near-zero.")
+            
+        elif motion_type == "FORCE_LABOR":
+            # Workers vote to shift 20% of ALL labor to a specific tech
+            print(f"  * Motion PASSED: Massive Labor Mobilization for {target_product}.")
+            for prod in self.products:
+                if prod != target_product:
+                    tax = self.products[prod]["planned_labor"] * 0.2
+                    self.products[prod]["planned_labor"] -= tax
+                    self.products[target_product]["planned_labor"] += tax
+
+    
     def calculate_suv(self):
         print("\n" + "="*80 + "\n--- ISAACHIC-CYBERNETIC FEEDBACK ---")
         total_satisfaction = 0
@@ -143,6 +168,11 @@ for year in range(1, 41):
     earth.tick(drought=(year == 5))
     if year == 12: earth.registry["Wood"]["current"] *= 0.3
     earth.recycle(); plan.innovate(); plan.check_luxury_unlock(stability)
+    if year == 13:
+    # The people see Wood is VETOED and vote to prioritize it
+        plan.democratic_vote("Wood", "FORCE_LABOR")
+        plan.democratic_vote("Wood", "SUBSIDIZE")
+
 print("\n" + "="*40)
 print("   FINAL ISAACHIC SYSTEM AUDIT (YEAR 40)")
 print("="*40)
