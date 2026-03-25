@@ -1,6 +1,6 @@
 # Isaachic Simulation: Adaptive Metabolic Brain
 # Base logic by Isaac MX Nielens (March 2026)
-# Features: Labor-Time Vouchers, Dynamic ENLT, Metabolic Ticks, and Adaptive Redirects
+# Features: Labor-Time Vouchers, Dynamic ENLT, Long scale Metabolic Ticks, Adaptive Redirects and SSI (Satisfaction Index)
 
 import random
 
