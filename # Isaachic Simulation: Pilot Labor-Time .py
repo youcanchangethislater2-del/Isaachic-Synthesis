@@ -3,6 +3,7 @@ import random
 class ResourceBank:
     def __init__(self):
         self.waste_bin = {"Steel": 0, "Plastic": 0, "Wood": 0, "Bread": 0, "Medicine": 0, "Water": 0, "Electricity": 0, "Healthcare": 0} 
+        
         # Earth's Registry: capacity vs current available stock
         self.registry = {
             "Bread": {"capacity": 1000, "current": 900, "regrow_rate": 0.05}, 
@@ -34,8 +35,11 @@ class ResourceBank:
 
     def get_enlt_multiplier(self, resource_name):
         res = self.registry.get(resource_name)
-        return res["capacity"] / max(res["current"], 1) if res else 1.0
-        return res["capacity"] / max(res["current"], 0.01) # Prevents DivisionByZero
+        if res:
+            # Prevent division by zero by ensuring denominator is at least 0.01
+            current_stock = max(res["current"], 0.01)
+            return res["capacity"] / current_stock
+        return 1.0
 
 
     def deplete(self, resource_name, amount):
@@ -44,11 +48,13 @@ class ResourceBank:
             self.registry[resource_name]["current"] -= usage
             if resource_name in self.waste_bin: self.waste_bin[resource_name] += usage
             self.registry[resource_name]["current"] = max(0, self.registry[resource_name]["current"])
-
+    
 class CentralPlan:
     def __init__(self, resource_bank):
         self.bank = resource_bank
         self.substitutes = {"Steel": ["Wood", "Plastic"], "Wood": ["Plastic", "Steel"], "Plastic": ["Wood", "Bread"]}
+        self.unlocked_luxury = False
+        self.happiness_streak = 0
         # CALIBRATED: Planned labor now fits a 100-voucher economy
         self.products = {
             "Bread": {"planned_labor": 12, "spent_vouchers": 0, "base_enlt": 4},
@@ -61,10 +67,40 @@ class CentralPlan:
             "Healthcare": {"planned_labor": 13, "spent_vouchers": 0, "base_enlt": 5},
         }
 
+    def check_luxury_unlock(self):
+        if not self.unlocked_luxury:
+            if self.social_stability >= 85:
+                self.happiness_streak += 1
+                print(f"--- PROGRESS: Happiness Streak {self.happiness_streak}/3 ---")
+            else:
+                self.happiness_streak = 0 # Reset if people get mad
+
+            if self.happiness_streak >= 3:
+                self.unlocked_luxury = True
+                # Electronics: High labor, high eco-cost
+                self.products["Electronics"] = {"planned_labor": 25, "spent_vouchers": 0, "base_enlt": 30}
+                # Also add it to the earth's registry via the bank
+                self.bank.registry["Electronics"] = {"capacity": 500, "current": 100, "regrow_rate": 0.0}
+                self.bank.waste_bin["Electronics"] = 0
+                print("\n!!! ACHIEVEMENT UNLOCKED: HIGH-TECH LUXURY (Electronics) !!!")
+    
     def innovate(self):
-        target = random.choice(list(self.products.keys()))
+        # 50% chance to focus on Electronics if they are being vetoed
+        if "Electronics" in self.products and self.products["Electronics"]["base_enlt"] > 10:
+            target = "Electronics" if random.random() > 0.5 else random.choice(list(self.products.keys()))
+        else:
+            target = random.choice(list(self.products.keys()))
         self.products[target]["base_enlt"] *= 0.85
-        print(f"\n[TECH] {target} ecological cost reduced by 15%.")
+    
+    def intensify_electronics(self):
+        # If electronics are vetoed, shift labor from healthy sectors
+        if "Electronics" in self.products and self.products["Electronics"]["spent_vouchers"] == 0:
+            print(">>> BRAIN: Intensifying Electronics Research...")
+            self.products["Electronics"]["planned_labor"] += 2 
+            # Tax a healthy sector to pay for it
+            self.products["Bread"]["planned_labor"] -= 2 
+
+
 
     def process_consumption(self, product_name, amount):
         if product_name in self.products:
@@ -105,7 +141,7 @@ class IsaachicAgent:
 earth = ResourceBank(); plan = CentralPlan(earth)
 surgeon = IsaachicAgent(20000); laborer = IsaachicAgent(0)
 
-for year in range(1, 30):
+for year in range(1, 40):
     print(f"\n### YEAR {year} ###")
     surgeon.work(40); laborer.work(40)
     
@@ -116,4 +152,13 @@ for year in range(1, 30):
     
     plan.calculate_suv()
     earth.tick(drought=(year == 5))
+    
+    # YEAR 12: THE GREAT FIRE
+    if year == 12:
+        print("\n!!! DISASTER: FOREST FIRE & CROP SMOKE !!!")
+        earth.registry["Wood"]["current"] *= 0.3  # 70% of wood supply gone
+        earth.registry["Bread"]["current"] *= 0.6 # 40% of bread lost to smoke/ash
+        # This will likely break ADAPT-REDIRECTS—watch for Social Stability crash.
+
     earth.recycle(); plan.innovate()
+    plan.check_luxury_unlock()
