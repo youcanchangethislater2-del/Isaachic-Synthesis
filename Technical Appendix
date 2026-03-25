@@ -1,0 +1,37 @@
+Technical Appendix: The Isaachic Metabolic Brain (v2.0)
+1. The Metric of Value: Labor-Time Vouchers
+The simulation operates on a Labor-Theory of Value (LTV) basis. All economic activity is denominated in labor-hours.
+Agent Credit: An agent’s hourly wage is calculated as 
+1+ (Training / CareerExpectedHours)
+
+Voucher Cancellation: Spent vouchers are tracked against a product's "Planned Labor" to generate the Social Utility Valuation (SUV), which measures the ratio of actual social demand to the planned labor budget.
+2. The ENLT Governor (Metabolic Multiplier)
+The core innovation is Ecological Necessary Labor Time (ENLT). It acts as a non-linear feedback loop that increases the "cost" of production as resources approach depletion.
+The Formula: ENLT Multiplier = 1 (Capacity/Current Stock - 1) x damping 
+
+Damping Factor: A constant (0.3 for industrial, 0.1 for luxury) that prevents mathematical paralysis by smoothing the scarcity penalty.
+Metabolic Veto: If the ENLT Multiplier causes the Priority Score (PS) to fall below 1.0, the production is Vetoed by the registry to protect biospheric integrity.
+
+3. Thermodynamic Realism: The Entropy Tax
+In accordance with the Second Law of Thermodynamics, the system is a dissipative structure.
+Entropy Function: apply_entropy() applies a yearly decay rate to stocks (e.g., 5% rot for Bread, 1% rust for Steel).
+Requirement for Work: This ensures that the "Cybernetic Brain" cannot simply stop; it must constantly allocate labor to replace lost order (Negentropy).
+4. Cybernetic Plasticity: Adaptive Redirects
+
+When a product is Vetoed by the ENLT Governor, the CentralPlan executes a search for Substitutes.
+Functional Rerouting: If Steel is vetoed but Wood is healthy (PS > 1.2), the demand is redirected.
+Systemic Resilience: This logic allowed the simulation to survive a 70% biomass collapse in Year 12 by pivoting industrial demand toward agricultural and energetic surpluses.
+
+5. The Cyber-Demos: Democratic Overrides
+To ensure the system is subordinate to human will, two democratic functions were implemented:
+SUBSIDIZE: The workforce votes to lower the Damping factor for one year, allowing a "social emergency" bypass of ecological limits.
+FORCE_LABOR: A mass mobilization function that taxes 20% of labor from all sectors to forcibly overcome a specific technological bottleneck (e.g., Electronics).
+
+6. Innovation Dynamics (Targeted R&D)
+Technology is not random. The innovate() function is weighted:
+If a high-tech luxury (Electronics) is unlocked but Vetoed, there is a 60% probability that R&D will be focused on that specific bottleneck until a breakthrough (PS > 1.0) is achieved.
+
+Summary of Variables (Year 40 Stable State):
+Equilibrium Stability: 94.4%
+Recycling Efficiency: 80% (Circular Economy)
+Thermodynamic State: Non-Equilibrium Steady State (NESS)
