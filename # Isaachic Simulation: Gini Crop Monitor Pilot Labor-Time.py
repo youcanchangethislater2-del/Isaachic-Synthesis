@@ -104,12 +104,14 @@ class CentralPlan:
         return sum((x/mu) * math.log(x/mu) for x in values if x > 0) / n
 
     def execute_metabolic_rebalancing(self, plots):
-        print("\n[CYBER-BRAIN] Pathogen detected. Activating Pumps...")
-        if ser:
-            ser.write(b"PUMP_ON\n")
-        
-        avg_moisture = sum(p['moisture'] for p in plots.values()) / len(plots)
-        for name in plots: plots[name]['moisture'] = avg_moisture
+            print("\n[CYBER-BRAIN] INEQUALITY DETECTED. Sounding Alarm...")
+            if ser:
+                ser.write(b"BEEP\n") # The Alarm
+                time.sleep(0.1)
+                ser.write(b"PUMP_ON\n") # The Action
+            
+            avg_moisture = sum(p['moisture'] for p in plots.values()) / len(plots)
+            for name in plots: plots[name]['moisture'] = avg_moisture
 
     def calculate_suv(self, plot_data):
         print("\n" + "="*40 + "\n--- ISAACHIC FEEDBACK ---")
