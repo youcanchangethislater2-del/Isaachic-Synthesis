@@ -165,6 +165,7 @@ class IsaachicAgent:
 earth = ResourceBank(); plan = CentralPlan(earth)
 surgeon = IsaachicAgent(20000); laborer = IsaachicAgent(0)
 
+current_surge_rate = 0.05  # Starting at your "Push it to the Limit" 5%
 for year in range(1, 81):
     h1 = surgeon.work(40); h2 = laborer.work(40)
     total_hours = h1 + h2
